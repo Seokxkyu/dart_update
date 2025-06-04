@@ -249,7 +249,6 @@ def main(target_date: str, excel_path: str):
     mapping = {'Y': 'KS', 'K': 'KQ'}
     codes = df['stock_code'].astype(str).unique()
 
-    # 병렬화 또는 캐시를 적용할 수 있음
     market_infos = {code: fetch_market_info(session, code) for code in codes}
 
     records = []
