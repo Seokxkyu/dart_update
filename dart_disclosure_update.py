@@ -165,27 +165,68 @@ def update_excel(result_df: pd.DataFrame, excel_path: str):
     if 'main' in wb.sheetnames:
         ws = wb['main']
         existing_df = pd.read_excel(
-            excel_path, sheet_name='main',
-            usecols=['날짜 (D)', '공시회사', '계약 금액(억)'],
+            excel_path,
+            sheet_name='main',
+            usecols=['날짜 (D)', '공시회사', '계약 금액(억)', 'Cnt'],
             parse_dates=['날짜 (D)']
         )
     else:
         ws = wb.create_sheet('main')
-        existing_df = pd.DataFrame(columns=result_df.columns)
-        ws.append(list(result_df.columns))
+        existing_df = pd.DataFrame(columns=list(result_df.columns) + ['Cnt'])
+        ws.append(list(result_df.columns) + ['Cnt'])
 
     new_rows = filter_new_rows(result_df, existing_df)
+
+    # ← 여기를 '최신 날짜 기준' Cnt 로직으로 수정 ↓
+    if not existing_df.empty:
+        existing_df_sorted = existing_df.sort_values(['공시회사', '날짜 (D)'])
+        existing_latest = existing_df_sorted.groupby('공시회사', as_index=False).last()
+        existing_max_cnt = dict(zip(
+            existing_latest['공시회사'],
+            existing_latest['Cnt'].astype(int)
+        ))
+    else:
+        existing_max_cnt = {}
+    # ← 여기까지 수정
+
     header_row = [cell.value for cell in ws[1]]
-    numeric_cols = [col for col in result_df.columns if is_integer_dtype(result_df[col]) or is_float_dtype(result_df[col])]
-    col_idx_map = {col: header_row.index(col) + 1 for col in numeric_cols if col in header_row}
+    numeric_cols = [
+        col for col in result_df.columns
+        if is_integer_dtype(result_df[col]) or is_float_dtype(result_df[col])
+    ]
+    col_idx_map = {
+        col: header_row.index(col) + 1
+        for col in numeric_cols
+        if col in header_row
+    }
+
+    next_cnt = {
+        company: existing_max_cnt.get(company, 0) + 1
+        for company in existing_max_cnt
+    }
 
     for _, row in new_rows.iterrows():
-        row_values = [row.get(col, '') for col in header_row]
+        company = row['공시회사']
+        if company not in next_cnt:
+            next_cnt[company] = 1
+
+        this_cnt = next_cnt[company]
+        next_cnt[company] += 1
+
+        row_values = []
+        for col in header_row:
+            if col == 'Cnt':
+                row_values.append(this_cnt)
+            else:
+                row_values.append(row.get(col, ''))
+
         ws.append(row_values)
         new_row_idx = ws.max_row
+
         for idx, col in enumerate(header_row, start=1):
             cell = ws.cell(row=new_row_idx, column=idx)
             value = row.get(col, '')
+
             if col in ['날짜 (D)', '시작일 (s)', '종료일 (e)'] and pd.notna(value):
                 cell.number_format = 'yyyy-mm-dd'
             elif col in col_idx_map:
