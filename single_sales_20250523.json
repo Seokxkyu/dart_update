@@ -1,0 +1,167 @@
+[
+  {
+    "corp_code":"00963976",
+    "corp_name":"SG",
+    "stock_code":"255220",
+    "corp_cls":"K",
+    "report_nm":"[기재정정]단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523900571",
+    "flr_nm":"SG",
+    "rcept_dt":"20250523",
+    "rm":"코"
+  },
+  {
+    "corp_code":"00164478",
+    "corp_name":"현대건설",
+    "stock_code":"000720",
+    "corp_cls":"Y",
+    "report_nm":"[기재정정]단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523800568",
+    "flr_nm":"현대건설",
+    "rcept_dt":"20250523",
+    "rm":"유"
+  },
+  {
+    "corp_code":"01689035",
+    "corp_name":"민테크",
+    "stock_code":"452200",
+    "corp_cls":"K",
+    "report_nm":"[기재정정]단일판매ㆍ공급계약체결(자율공시)              ",
+    "rcept_no":"20250523900417",
+    "flr_nm":"민테크",
+    "rcept_dt":"20250523",
+    "rm":"코"
+  },
+  {
+    "corp_code":"00363246",
+    "corp_name":"우원개발",
+    "stock_code":"046940",
+    "corp_cls":"K",
+    "report_nm":"[기재정정]단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523900432",
+    "flr_nm":"우원개발",
+    "rcept_dt":"20250523",
+    "rm":"코"
+  },
+  {
+    "corp_code":"00304076",
+    "corp_name":"케이엔솔",
+    "stock_code":"053080",
+    "corp_cls":"K",
+    "report_nm":"[기재정정]단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523900285",
+    "flr_nm":"케이엔솔",
+    "rcept_dt":"20250523",
+    "rm":"코"
+  },
+  {
+    "corp_code":"00164609",
+    "corp_name":"HD현대미포",
+    "stock_code":"010620",
+    "corp_cls":"Y",
+    "report_nm":"단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523800249",
+    "flr_nm":"HD현대미포",
+    "rcept_dt":"20250523",
+    "rm":"유"
+  },
+  {
+    "corp_code":"00219486",
+    "corp_name":"신세계I&C",
+    "stock_code":"035510",
+    "corp_cls":"Y",
+    "report_nm":"단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523800251",
+    "flr_nm":"신세계I&C",
+    "rcept_dt":"20250523",
+    "rm":"유"
+  },
+  {
+    "corp_code":"00143262",
+    "corp_name":"우진아이엔에스",
+    "stock_code":"010400",
+    "corp_cls":"Y",
+    "report_nm":"[기재정정]단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523800234",
+    "flr_nm":"우진아이엔에스",
+    "rcept_dt":"20250523",
+    "rm":"유"
+  },
+  {
+    "corp_code":"00602136",
+    "corp_name":"디와이피엔에프",
+    "stock_code":"104460",
+    "corp_cls":"K",
+    "report_nm":"[기재정정]단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523900203",
+    "flr_nm":"디와이피엔에프",
+    "rcept_dt":"20250523",
+    "rm":"코"
+  },
+  {
+    "corp_code":"00128980",
+    "corp_name":"삼호개발",
+    "stock_code":"010960",
+    "corp_cls":"Y",
+    "report_nm":"[기재정정]단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523800172",
+    "flr_nm":"삼호개발",
+    "rcept_dt":"20250523",
+    "rm":"유"
+  },
+  {
+    "corp_code":"01524507",
+    "corp_name":"핀텔",
+    "stock_code":"291810",
+    "corp_cls":"K",
+    "report_nm":"단일판매ㆍ공급계약체결(자율공시)              ",
+    "rcept_no":"20250523900151",
+    "flr_nm":"핀텔",
+    "rcept_dt":"20250523",
+    "rm":"코"
+  },
+  {
+    "corp_code":"00172228",
+    "corp_name":"엔케이",
+    "stock_code":"085310",
+    "corp_cls":"Y",
+    "report_nm":"[기재정정]단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523800149",
+    "flr_nm":"엔케이",
+    "rcept_dt":"20250523",
+    "rm":"유"
+  },
+  {
+    "corp_code":"00965318",
+    "corp_name":"이노시뮬레이션",
+    "stock_code":"274400",
+    "corp_cls":"K",
+    "report_nm":"[기재정정]단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523900128",
+    "flr_nm":"이노시뮬레이션",
+    "rcept_dt":"20250523",
+    "rm":"코"
+  },
+  {
+    "corp_code":"00143262",
+    "corp_name":"우진아이엔에스",
+    "stock_code":"010400",
+    "corp_cls":"Y",
+    "report_nm":"단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523800059",
+    "flr_nm":"우진아이엔에스",
+    "rcept_dt":"20250523",
+    "rm":"유"
+  },
+  {
+    "corp_code":"00406046",
+    "corp_name":"HD현대마린엔진",
+    "stock_code":"071970",
+    "corp_cls":"Y",
+    "report_nm":"단일판매ㆍ공급계약체결              ",
+    "rcept_no":"20250523800034",
+    "flr_nm":"HD현대마린엔진",
+    "rcept_dt":"20250523",
+    "rm":"유"
+  }
+]
