@@ -177,7 +177,6 @@ def update_excel(result_df: pd.DataFrame, excel_path: str):
 
     new_rows = filter_new_rows(result_df, existing_df)
 
-    # ← 여기를 '최신 날짜 기준' Cnt 로직으로 수정 ↓
     if not existing_df.empty:
         existing_df_sorted = existing_df.sort_values(['공시회사', '날짜 (D)'])
         existing_latest = existing_df_sorted.groupby('공시회사', as_index=False).last()
@@ -187,7 +186,6 @@ def update_excel(result_df: pd.DataFrame, excel_path: str):
         ))
     else:
         existing_max_cnt = {}
-    # ← 여기까지 수정
 
     header_row = [cell.value for cell in ws[1]]
     numeric_cols = [
