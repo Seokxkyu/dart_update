@@ -43,7 +43,15 @@ def fetch_sales(session, target_date: str) -> pd.DataFrame:
         all_reports.extend(reports)
 
     df = pd.DataFrame(all_reports)
-    return df[df['report_nm'].str.contains('단일판매') & ~df['report_nm'].str.contains('정정|해지')].reset_index(drop=True)
+
+    if df.empty or 'report_nm' not in df.columns:
+        return pd.DataFrame()
+
+    return df[
+        df['report_nm'].str.contains('단일판매') &
+        ~df['report_nm'].str.contains('정정|해지')
+    ].reset_index(drop=True)
+
 
 def parse_contract(session, rcept_no: str) -> dict:
     resp = session.get(
