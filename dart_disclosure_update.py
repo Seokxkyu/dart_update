@@ -161,6 +161,7 @@ def filter_new_rows(result_df: pd.DataFrame, existing_df: pd.DataFrame) -> pd.Da
         ) not in existing_keys
     return result_df[result_df.apply(is_new, axis=1)]
 
+
 def update_excel(result_df: pd.DataFrame, excel_path: str):
     if os.path.exists(excel_path):
         try:
@@ -188,9 +189,10 @@ def update_excel(result_df: pd.DataFrame, excel_path: str):
     if not existing_df.empty:
         existing_df_sorted = existing_df.sort_values(['공시회사', '날짜 (D)'])
         existing_latest = existing_df_sorted.groupby('공시회사', as_index=False).last()
+        numeric_cnt = pd.to_numeric(existing_latest['Cnt'], errors='coerce').fillna(0).astype(int)
         existing_max_cnt = dict(zip(
             existing_latest['공시회사'],
-            existing_latest['Cnt'].astype(int)
+            numeric_cnt
         ))
     else:
         existing_max_cnt = {}
