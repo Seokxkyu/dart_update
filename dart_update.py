@@ -73,7 +73,7 @@ def parse_contract(session, rcept_no: str) -> dict:
     contract_table = None
     for tbl in soup.find_all('table'):
         text = tbl.get_text()
-        if '체결계약명' in text or '계약금액' in text or '판매ㆍ공급계약 내용' in text:
+        if any(k in text for k in ['계약금액', '판매ㆍ공급계약', '세부내용', '계약내역']):
             contract_table = tbl
             break
     if contract_table is None:
@@ -101,17 +101,23 @@ def parse_contract(session, rcept_no: str) -> dict:
             return None
         return float(raw)
 
-    name = get_val(['체결계약명']) or get_val(['판매ㆍ공급계약내용', '판매ㆍ공급계약 내용'])
+    name = get_val([
+        '체결계약명', '판매ㆍ공급계약내용', '판매ㆍ공급계약 내용',
+        '판매ㆍ공급계약 구분', '공급계약 구분', '세부내용', '공급계약내용'
+    ])
+    if not name:
+        name = get_val(['계약내역'])
+
     raw_start = get_val(['시작일'])
     if raw_start in (None, '', '-'):
-        raw_start = get_val(['계약(수주)일자'])
+        raw_start = get_val(['계약(수주)일자', '계약(수주)일'])
 
     return {
-        '내용':            name or '',
-        '계약 금액(억)':    int(get_int(['계약금액', '계약금액총액']) or 0) / 100_000_000,
+        '내용':             name or '',
+        '계약 금액(억)':     int(get_int(['계약금액', '계약금액총액']) or 0) / 100_000_000,
         '매출액 대비(%) (A)': float(get_float(['매출액대비', '매출액대비(%)']) or 0),
-        '시작일 (s)':       raw_start,
-        '종료일 (e)':       get_val(['종료일']),
+        '시작일 (s)':        raw_start,
+        '종료일 (e)':        get_val(['종료일']),
         '계약상대':          get_val(['계약상대']),
     }
 
