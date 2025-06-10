@@ -1,17 +1,19 @@
-import io
 import os
+import io
+import re
 import argparse
 from datetime import datetime
-import re
-import zipfile
-import pandas as pd
 import requests
+import pandas as pd
+from zipfile import ZipFile, BadZipFile
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Alignment
-from pandas.api.types import is_integer_dtype, is_float_dtype
+from pandas.api.types import (
+    is_integer_dtype,
+    is_float_dtype
+)
 from bs4 import BeautifulSoup
-from zipfile import ZipFile, BadZipFile
-from dotenv import load_dotenv
+from dotenv import load_dotenv         
 
 load_dotenv()
 API_KEY = os.getenv("DART_API_KEY")
