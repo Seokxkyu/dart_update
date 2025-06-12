@@ -118,7 +118,7 @@ def parse_contract(session, rcept_no: str) -> dict:
         '매출액 대비(%) (A)': float(get_float(['매출액대비', '매출액대비(%)']) or 0),
         '시작일 (s)':        raw_start,
         '종료일 (e)':        get_val(['종료일']),
-        '계약상대':          get_val(['계약상대']),
+        '계약상대':          get_val(['계약상대', '계약상대방']),
     }
 
 def fetch_market_info(session, stock_code: str) -> dict:
