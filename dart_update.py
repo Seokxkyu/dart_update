@@ -15,6 +15,13 @@ from pandas.api.types import (
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv         
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/114.0.0.0 Safari/537.36"
+    )
+}
 load_dotenv()
 API_KEY = os.getenv("DART_API_KEY")
 
@@ -255,51 +262,138 @@ def update_excel(result_df: pd.DataFrame, excel_path: str):
 
     wb.save(excel_path)
 
+
+def fetch_closes(session, stock_code: str, rcept_dt: str):
+    target_date = datetime.strptime(rcept_dt, "%Y%m%d").date()
+    url = f"https://finance.naver.com/item/sise_day.naver?code={stock_code}&page=1"
+    resp = session.get(url, headers=HEADERS, timeout=5)
+    resp.raise_for_status()
+    records = []
+    soup = BeautifulSoup(resp.text, "lxml")
+    for tr in soup.select("table.type2 tr"):
+        cols = tr.find_all("td")
+        if len(cols) != 7:
+            continue
+        date_txt = cols[0].get_text(strip=True)
+        close_txt = cols[1].get_text(strip=True).replace(",", "")
+        if not date_txt or not close_txt:
+            continue
+        try:
+            dt = datetime.strptime(date_txt, "%Y.%m.%d").date()
+            cl = int(close_txt)
+        except Exception:
+            continue
+        records.append((dt, cl))
+    records.sort(key=lambda x: x[0], reverse=True)
+    dates = [dt for dt, _ in records]
+    closes = [cl for _, cl in records]
+    try:
+        idx = dates.index(target_date)
+    except ValueError:
+        return None, None, None
+    prev_close = closes[idx + 1] if idx + 1 < len(closes) else None
+    today_close = closes[idx]
+    next_close = closes[idx - 1] if idx - 1 >= 0 else None
+    return prev_close, today_close, next_close
+
+def fill_next_close(session, excel_path: str, sheet_name: str='main'):
+    wb = load_workbook(excel_path)
+    if sheet_name not in wb.sheetnames:
+        return
+    ws = wb[sheet_name]
+
+    header = [c.value for c in ws[1]]
+    idx_code  = header.index('종목코드')     + 1
+    idx_date  = header.index('날짜 (D)')    + 1
+    idx_prev  = header.index('전일종가(원)') + 1
+    idx_today = header.index('당일종가(원)') + 1
+    idx_next  = header.index('익일종가(원)') + 1
+
+    center = Alignment(horizontal='center', vertical='center')
+
+    for row in range(2, ws.max_row + 1):
+        if ws.cell(row, idx_next).value is not None:
+            continue
+
+        code_cell = ws.cell(row, idx_code).value
+        date_cell = ws.cell(row, idx_date).value
+        if code_cell is None or date_cell is None:
+            continue
+
+        if hasattr(date_cell, 'strftime'):
+            rcept_dt = date_cell.strftime('%Y%m%d')
+        else:
+            try:
+                rcept_dt = datetime.strptime(str(date_cell), '%Y%m%d').strftime('%Y%m%d')
+            except ValueError:
+                continue
+
+        prev_c, today_c, next_c = fetch_closes(session, str(code_cell), rcept_dt)
+
+        for idx, val in ((idx_prev, prev_c),
+                         (idx_today, today_c),
+                         (idx_next, next_c)):
+            cell = ws.cell(row, idx)
+            cell.value = val
+            cell.number_format = '#,##0'
+            cell.alignment = center
+
+    wb.save(excel_path)
+    print("✅ 익일종가 업데이트 완료")
+
 def main(target_date: str, excel_path: str):
     session = requests.Session()
-    session.headers.update({"User-Agent": "Mozilla/5.0"})
+    session.headers.update({
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/114.0.0.0 Safari/537.36"
+        )
+    })
 
     df = fetch_sales(session, target_date)
-    if df.empty:
-        print("오늘 단일판매 공시가 없습니다.")
-        return
-
-    mapping = {'Y': 'KS', 'K': 'KQ'}
-    codes = df['stock_code'].astype(str).unique()
-
-    market_infos = {code: fetch_market_info(session, code) for code in codes}
-
     records = []
+    mapping = {'Y':'KS','K':'KQ'}
+    market_infos = {
+        code: fetch_market_info(session, code)
+        for code in df['stock_code'].astype(str).unique()
+    }
+
     for _, row in df.iterrows():
-        detail = parse_contract(session, row['rcept_no'])
-        market = market_infos.get(str(row['stock_code']), {})
-        if market.get('업종 분류') == '건설':
+        if market_infos.get(str(row['stock_code']),{}).get('업종 분류') == '건설':
             continue
+        prev_c, today_c, next_c = fetch_closes(
+            session, str(row['stock_code']), row['rcept_dt']
+        )
         records.append({
-            '공시회사': row['corp_name'],
-            '날짜 (D)': row['rcept_dt'],
-            '거래소': mapping.get(row['corp_cls'], ''),
-            '내용': detail.get('내용', ''),
-            '계약 금액(억)': detail.get('계약 금액(억)', 0.0),
-            '매출액 대비(%) (A)': detail.get('매출액 대비(%) (A)', 0.0),
-            '계약상대': detail.get('계약상대', ''),
-            '시작일 (s)': detail.get('시작일 (s)'),
-            '종료일 (e)': detail.get('종료일 (e)'),
-            '업종 분류': market.get('업종 분류', ''),
-            '시가총액(억)': market.get('시가총액(억)', 0)
+            '종목코드':      row['stock_code'],
+            '공시회사':      row['corp_name'],
+            '날짜 (D)':      row['rcept_dt'],
+            '거래소':        mapping.get(row['corp_cls'], ''),
+            '내용':          parse_contract(session, row['rcept_no']).get('내용',''),
+            '계약 금액(억)':  parse_contract(session, row['rcept_no']).get('계약 금액(억)',0.0),
+            '매출액 대비(%) (A)': parse_contract(session, row['rcept_no']).get('매출액 대비(%) (A)',0.0),
+            '계약상대':      parse_contract(session, row['rcept_no']).get('계약상대',''),
+            '시작일 (s)':     parse_contract(session, row['rcept_no']).get('시작일 (s)'),
+            '종료일 (e)':     parse_contract(session, row['rcept_no']).get('종료일 (e)'),
+            '업종 분류':      market_infos[str(row['stock_code'])].get('업종 분류',''),
+            '시가총액(억)':    market_infos[str(row['stock_code'])].get('시가총액(억)',0),
+            '전일종가(원)':   prev_c,
+            '당일종가(원)':   today_c,
+            '익일종가(원)':   next_c
         })
 
-    result_df = pd.DataFrame(records)
-    result_df['날짜 (D)'] = pd.to_datetime(result_df['날짜 (D)'], format='%Y%m%d', errors='coerce')
-    result_df['시작일 (s)'] = pd.to_datetime(result_df['시작일 (s)'], format='%Y-%m-%d', errors='coerce')
-    result_df['종료일 (e)'] = pd.to_datetime(result_df['종료일 (e)'], format='%Y-%m-%d', errors='coerce')
+    if records:
+        df_out = pd.DataFrame(records)
+        df_out['날짜 (D)']   = pd.to_datetime(df_out['날짜 (D)'], format='%Y%m%d', errors='coerce')
+        df_out['시작일 (s)'] = pd.to_datetime(df_out['시작일 (s)'], format='%Y-%m-%d', errors='coerce')
+        df_out['종료일 (e)'] = pd.to_datetime(df_out['종료일 (e)'], format='%Y-%m-%d', errors='coerce')
+        update_excel(df_out, excel_path)
+        print(f"✅ {len(records)}건 공시 업데이트 완료")
+    else:
+        print("신규 업데이트할 공시가 없습니다.")
 
-    for col in ['계약 금액(억)', '매출액 대비(%) (A)', '시가총액(억)']:
-        if result_df[col].dtype == object:
-            result_df[col] = result_df[col].astype(str).str.replace(',', '').astype(float if '금액' in col or '%' in col else int)
-
-    update_excel(result_df, excel_path)
-    print("✅ 공시 업데이트 완료")
+    fill_next_close(session, excel_path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="DART 단일판매 공시 업데이트")

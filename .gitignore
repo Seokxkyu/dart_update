@@ -1,3 +1,5 @@
 .env
 *.xlsx
 *.csv
+*.xml
+*.bin
